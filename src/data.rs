@@ -10,13 +10,13 @@ pub struct List {
     pub data: ListData
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Todo {
     pub data: String,
     pub state: TaskState
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MainTaskFormat {
     pub data: Vec<Todo>,
     pub title: String,
@@ -24,7 +24,7 @@ pub struct MainTaskFormat {
     pub github_link: String
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone)]
 #[repr(u8)]
 pub enum TaskState {
     Pending = 0,
@@ -59,11 +59,11 @@ impl List {
         return List { data: list };
     }
 
-    pub fn write(new_data: &mut ListData, data_path_string: &String) {
+    pub fn write(new_data: ListData, data_path_string: &String) {
 
         let data_path: &Path = Path::new(data_path_string);
 
-        let string_data: String = serde_json::to_string_pretty(new_data).unwrap_or_else(|_| {
+        let string_data: String = serde_json::to_string_pretty(&new_data).unwrap_or_else(|_| {
             println!("Error: can't parse ListData to string_data");
             std::process::exit(exitcode::DATAERR);
 

@@ -45,6 +45,6 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
         todo!();
     }
 
-    data::List::write(list, &config.local_location);
+    data::List::write(list.to_vec(), &config.local_location);
     return list;
 }

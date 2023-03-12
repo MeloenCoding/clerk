@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, Todo}};
+use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self}};
 #[derive(Debug, Args)]
 pub struct Arguments {
     /// The index of the main task you want to mark
@@ -30,67 +30,67 @@ pub enum IndexArgs {
     Remove
 }
 
+fn write_list(task_state: TaskState, index_of_maintask: usize, index_of_subtask: Option<usize>, list: &mut ListData) -> &ListData {
+    if index_of_maintask >= list.len() {
+        println!("Error: index_of_maintask out of bounds");
+        std::process::exit(exitcode::DATAERR);
+    }
+    let mut target_maintask: &mut MainTaskFormat = &mut list[index_of_maintask];
 
-pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a ListData) -> &'a ListData {
+    match index_of_subtask {
+        Some(index_of_subtask) => {
+            if index_of_subtask >= target_maintask.data.len() {
+                println!("Error: index_of_subtask out of bounds");
+                std::process::exit(exitcode::CONFIG);
+            }
+            let mut target_subtask = &mut list[index_of_maintask].data[index_of_subtask];
+
+            target_subtask.state = task_state;
+            return list;
+        },
+        None => {
+            target_maintask.state = task_state;
+            return list;
+        },
+    };
+
+}
+
+pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> &'a ListData {
     let index_of_maintask: usize = command_args.index_of_maintask;
+    let index_of_subtask: Option<usize> = command_args.index_of_subtask;
     
     if index_of_maintask >= list.len() {
         println!("Error: index_of_maintask out of bounds");
         std::process::exit(exitcode::DATAERR);
     }
 
-    match command_args.index_of_subtask {
-        Some(index_of_subtask) => {
-            if index_of_subtask >= target_task.data.len() {
-                println!("Error: index_of_subtask out of bounds");
-                std::process::exit(exitcode::CONFIG);
-            }
-
-            let target_task: &Todo = &list[index_of_maintask].data[index_of_subtask];
-
-        },
-        None => {
-
-        },
-    }
-
-    
-
-    println!("{:?} {:?}", target_task, target_subtask);
-
     if config.local {
-        let mut updated_task: MainTaskFormat = match command_args.option {
-            IndexArgs::Completed => {
-                todo!()
+        let updated_list: &ListData = match command_args.option {
+            IndexArgs::Completed => write_list(TaskState::Completed, index_of_maintask, index_of_subtask, list),
+            IndexArgs::Doing => write_list(TaskState::Doing, index_of_maintask, index_of_subtask, list),
+            IndexArgs::Pending => write_list(TaskState::Pending, index_of_maintask, index_of_subtask, list),
+            IndexArgs::Remove => {
+                match index_of_subtask {
+                    Some(index_of_subtask) => {
+                        let target_maintask: &MainTaskFormat = &list[index_of_maintask];
+                        
+                        if index_of_subtask >= target_maintask.data.len() {
+                            println!("Error: index_of_subtask out of bounds");
+                            std::process::exit(exitcode::CONFIG);
+                        }
+                        list[index_of_maintask].data.remove(index_of_subtask);
+                        return list;
+                    },
+                    None => {
+                        list.remove(index_of_maintask);
+                        return list;
+                    },
+                }                
             },
-            IndexArgs::Doing => todo!(),
-            IndexArgs::Pending => todo!(),
-            IndexArgs::Remove => todo!(),
         };
-
-    //     if command_args.completed || command_args.doing || command_args.remove {
-            
-    //     }
-    //     else {
-    //         if index_arg == usize::MAX || index_arg > list.len(){
-    //             println!("Error: invalid index");
-    //             std::process::exit(exitcode::DATAERR);
-    //         }
-
-    //         list[index_arg].data.as_mut().unwrap().append(&mut vec![Todo {
-    //             data: command_args.string.to_string(),
-    //             state: TaskState::Pending 
-    //         }]);
-    //     }
-    // }
-    // else if config.remote_location.is_empty() {
-    //     println!("Error: no remote_location is set");
-    //     std::process::exit(exitcode::CONFIG);
-    // }
-    // else{
-    //     todo!();
+        data::List::write( updated_list.to_vec(), &config.local_location);
     }
 
-    // data::List::write(list, &config.local_location);
     return list;
 }
