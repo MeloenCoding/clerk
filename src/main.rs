@@ -3,7 +3,7 @@ mod config;
 mod data;
 mod cli;
 
-use args::{EntityType, add, default, mark};
+use args::{EntityType, add, default, mark, edit};
 use data::{List, ListData};
 use exitcode::{self, ExitCode};
 use tokio;
@@ -21,6 +21,7 @@ async fn main() -> Result<(), reqwest::Error>{
     let output: &ListData = match &args.entity_type {
         Some(EntityType::Add(command_args)) => add::handle(config, command_args, &mut list),
         Some(EntityType::Mark(command_args)) => mark::handle(config, command_args, &mut list),
+        Some(EntityType::Edit(command_args)) => edit::handle(config, command_args, &mut list),
         None => default::handle(&list)
     };
 

@@ -6,10 +6,10 @@ use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, To
 
 #[derive(Debug, Args)]
 pub struct Arguments {
-    /// The thing you want to add to the list
-    pub string: String,
+    /// <STRING>: The task you want to add to the list
+    pub task_name: String,
 
-    /// Set the command as a subcommand on the given index
+    /// <INT>: Set the command as a subcommand on the given index
     #[arg(short('s'))]
     pub index: Option<usize>,
 }
@@ -21,7 +21,7 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
             list.push( MainTaskFormat {
                 data: vec![],
                 state: TaskState::Pending,
-                title: command_args.string.to_string(),
+                title: command_args.task_name.to_string(),
                 github_link: "".to_string(),
             });
         }
@@ -32,7 +32,7 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
             }
 
             list[index_arg].data.append(&mut vec![Todo {
-                data: command_args.string.to_string(),
+                data: command_args.task_name.to_string(),
                 state: TaskState::Pending 
             }]);
         }

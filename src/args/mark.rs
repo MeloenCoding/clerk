@@ -3,18 +3,16 @@ use clap::{Args, Subcommand};
 use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self}};
 #[derive(Debug, Args)]
 pub struct Arguments {
-    /// The index of the main task you want to mark
-    #[arg()]
+    /// <INT> : The index of the main task you want to mark
     pub index_of_maintask: usize,
-    /// The index of the sub task you want to mark
-    #[arg()]
+    /// <INT> : The index of the sub task you want to mark
     pub index_of_subtask: Option<usize>,
+
     #[clap(subcommand)]
-    // pub option: Option<IndexArgs>,
     pub option: IndexArgs
 }
 
-#[derive(Debug, Subcommand, )]
+#[derive(Debug, Subcommand)]
 pub enum IndexArgs {
     /// Mark todo as completed
     #[clap(short_flag('c'))]

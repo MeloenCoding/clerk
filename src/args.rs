@@ -1,6 +1,7 @@
 pub mod add;
 pub mod mark;
 pub mod default;
+pub mod edit;
 
 use clap::{ Parser, Subcommand };
 
@@ -14,9 +15,10 @@ pub struct ClerkArgs{
 
 #[derive(Debug, Subcommand)]
 pub enum EntityType {
-    /// Add a todo item to todo list
+    /// Add a task to  list
     Add(add::Arguments),
-    // #[clap(override_usage("clerk.exe <INDEX_OF_MAINTASK> [INDEX_OF_SUBTASK] [OPTION]\n"))]
-    /// Mark an item in the todo list
-    Mark(mark::Arguments)
+    /// Mark an task in the list
+    Mark(mark::Arguments),
+    /// Mark an task in the list
+    Edit(edit::Arguments)
 }
