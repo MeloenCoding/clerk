@@ -14,7 +14,7 @@ pub struct Arguments {
     pub index: Option<usize>,
 }
 
-pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> &'a ListData {
+pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
     let index_arg: usize = command_args.index.unwrap_or(usize::MAX);
     if config.local {
         if command_args.index.is_none() {
@@ -46,5 +46,5 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
     }
 
     data::List::write(list.to_vec(), &config.local_location);
-    return list;
+    return (list, None);
 }

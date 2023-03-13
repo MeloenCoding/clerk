@@ -1,11 +1,8 @@
 use crate::data::ListData;
 
-pub fn handle(list: &ListData) -> &ListData {
+pub fn handle(list: &ListData) -> (&ListData, Option<u16>) {
+    
 
-    // for main_task in list {
-        // println!("{:?}", main_task.title);
-    // }
-
-    return list;
+    return (list, None);
 }
 

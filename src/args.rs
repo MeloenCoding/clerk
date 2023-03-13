@@ -2,6 +2,7 @@ pub mod add;
 pub mod mark;
 pub mod default;
 pub mod edit;
+pub mod page;
 
 use clap::{ Parser, Subcommand };
 
@@ -20,5 +21,7 @@ pub enum EntityType {
     /// Mark an task in the list
     Mark(mark::Arguments),
     /// Mark an task in the list
-    Edit(edit::Arguments)
+    Edit(edit::Arguments),
+    /// Open a page
+    Page(page::Arguments)
 }

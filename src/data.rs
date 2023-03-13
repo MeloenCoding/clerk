@@ -1,4 +1,5 @@
 use std::{path::Path, fs::{self, File}, io::Write};
+use colored::Colorize;
 use serde_repr::*;
 use directories::ProjectDirs;
 use serde::{Serialize, Deserialize};
@@ -86,6 +87,8 @@ impl List {
             .expect("Error: can't create data file");
 
         new_data_file.write_all(deafult_data_file.as_bytes()).expect("Error: can't write config file");
+
+        println!("For more information about this tool, run '{}'", format!("clerk.exe -h").bold());
 
         return deafult_data_file.to_owned();
     }

@@ -51,10 +51,9 @@ fn write_list(task_state: TaskState, index_of_maintask: usize, index_of_subtask:
             return list;
         },
     };
-
 }
 
-pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> &'a ListData {
+pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
     let index_of_maintask: usize = command_args.index_of_maintask;
     let index_of_subtask: Option<usize> = command_args.index_of_subtask;
     
@@ -78,11 +77,11 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
                             std::process::exit(exitcode::CONFIG);
                         }
                         list[index_of_maintask].data.remove(index_of_subtask);
-                        return list;
+                        return (list, None);
                     },
                     None => {
                         list.remove(index_of_maintask);
-                        return list;
+                        return (list, None);
                     },
                 }                
             },
@@ -90,5 +89,5 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
         data::List::write( updated_list.to_vec(), &config.local_location);
     }
 
-    return list;
+    return (list, None);
 }
