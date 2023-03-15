@@ -1,5 +1,6 @@
 use std::{path::Path, fs::{self, File}, io::Write};
 use colored::Colorize;
+use reqwest::Response;
 use serde_repr::*;
 use directories::ProjectDirs;
 use serde::{Serialize, Deserialize};
@@ -35,7 +36,11 @@ pub enum TaskState {
     Completed = 2
 }
 
-
+#[derive(Debug, Deserialize)]
+pub struct ApiRes {
+    valid: bool,
+    data: Vec<MainTaskFormat>
+}
 
 impl List {
     pub async fn read(config: &Config) -> Self {
@@ -62,7 +67,7 @@ impl List {
             },
             false => {
                 let api_link: String = format!("{}", config.remote_location);
-                let res = reqwest::Client::new()
+                let res: Response = reqwest::Client::new()
                     .post(api_link)
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({
@@ -78,13 +83,22 @@ impl List {
                         std::process::exit(exitcode::UNAVAILABLE);
                     });
                     
-                println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
+                // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
+ 
+                if res.status().is_success() {
+                    let res_json = &res.json::<ApiRes>().await.unwrap_or_else(|_| {
+                        println!("Error: unable to parse response to json");
+                        std::process::exit(exitcode::DATAERR);
+                    });
+                    if res_json.valid {
+                        list = res_json.data.to_owned();
+                    }
+                }
+                else {
+                    println!("Error: invalid response from server");
+                    std::process::exit(exitcode::DATAERR);
+                }
 
-                // list = res.json().await.unwrap_or_else(|e| {
-                //     println!("Error: unable to parse response to json");
-                //     println!("{}",e);
-                //     std::process::exit(exitcode::DATAERR);
-                // });
             },
         }        
         return List { data: list };
@@ -121,5 +135,33 @@ impl List {
         println!("For more information about this tool, run '{}'", format!("clerk.exe -h").bold());
 
         return deafult_data_file.to_owned();
+    }
+
+    pub async fn set(config: &Config, new_data: &ListData) {
+        let api_link: String = format!("{}", config.remote_location);
+        let res: Response = reqwest::Client::new()
+            .post(api_link)
+            .header("Content-Type", "application/json")
+            .json(&serde_json::json!({
+                "appId": config.app_id.to_string(),
+                "appKey": config.app_key.to_string(),
+                "clientKey": config.remote_key.to_string(),
+                "endpoint": "/set",
+                "data": {
+                    "list": new_data
+                }
+            }))
+            .send()
+            .await.unwrap_or_else(|_| {
+                println!("Error: unable to send request to server");
+                std::process::exit(exitcode::UNAVAILABLE);
+            });
+            
+        // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
+
+        if !res.status().is_success() {
+            println!("Error: invalid response from server");
+            std::process::exit(exitcode::DATAERR);
+        }
     }
 }

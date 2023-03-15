@@ -14,7 +14,7 @@ pub struct Arguments {
     pub index: Option<usize>,
 }
 
-pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
+pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
     let index_arg: usize = command_args.index.unwrap_or(usize::MAX);
     if config.local {
         if command_args.index.is_none() {
@@ -42,7 +42,12 @@ pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut Lis
         std::process::exit(exitcode::CONFIG);
     }
     else{
-        todo!();
+        list.push(MainTaskFormat { 
+            data: vec![],
+            title: command_args.task_name.to_string(), 
+            state: TaskState::Pending, 
+            github_link: "".to_string() 
+        })
     }
 
     data::List::write(list.to_vec(), &config.local_location);

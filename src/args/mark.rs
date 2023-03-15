@@ -53,7 +53,7 @@ fn write_list(task_state: TaskState, index_of_maintask: usize, index_of_subtask:
     };
 }
 
-pub fn handle<'a>(config: Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
+pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
     let index_of_maintask: usize = command_args.index_of_maintask;
     let index_of_subtask: Option<usize> = command_args.index_of_subtask;
     

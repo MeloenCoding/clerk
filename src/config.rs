@@ -5,7 +5,7 @@ use std::fs::read_to_string;
 use directories::ProjectDirs;
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub local: bool,
     pub config_dir: String,

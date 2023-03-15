@@ -44,7 +44,7 @@ pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
     }
     total_tasks += total_sub_tasks;
 
-    let mut max_page: f64 = (<u32 as Into<f64>>::into(total_main_tasks)/4.0_f64).ceil();
+    let mut max_page: f64 = (<u32 as Into<f64>>::into(total_main_tasks)/5.0_f64).ceil();
 
     if max_page == 0.0 {
         max_page += 1.0;
