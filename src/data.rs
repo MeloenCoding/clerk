@@ -4,6 +4,8 @@ use serde_repr::*;
 use directories::ProjectDirs;
 use serde::{Serialize, Deserialize};
 
+use crate::config::Config;
+
 pub type ListData = Vec<MainTaskFormat>;
 
 #[derive(Debug, Serialize)]
@@ -36,27 +38,55 @@ pub enum TaskState {
 
 
 impl List {
-    pub fn read() -> Self {
-        let mut list: ListData = vec![];
-
-        if let Some(proj_dirs) = ProjectDirs::from("dev", "meloencoding", "clerk") {
-            let data_path: &Path = proj_dirs.data_dir();
-            let data_file: String = match fs::read_to_string(data_path.join("data.json")) {
-                Ok(data) => data,
-                Err(_error) => { 
-                    Self::create_data_file(data_path, "data.json")
+    pub async fn read(config: &Config) -> Self {
+        let mut list: ListData = vec![];        
+        match config.local {
+            true => {
+                if let Some(proj_dirs) = ProjectDirs::from("dev", "meloencoding", "clerk") {
+                    let data_path: &Path = proj_dirs.data_dir();
+                    let data_file: String = match fs::read_to_string(data_path.join("data.json")) {
+                        Ok(data) => data,
+                        Err(_error) => { 
+                            Self::create_data_file(data_path, "data.json")
+                        }
+                    };
+        
+                    // println!("{}", data_file);
+        
+                    list = serde_json::from_str(&data_file).unwrap_or_else(|_e| {
+                        // println!("{}", e);
+                        println!("Error: can't parse data_file into json");
+                        vec![]
+                    })
                 }
-            };
+            },
+            false => {
+                let api_link: String = format!("{}", config.remote_location);
+                let res = reqwest::Client::new()
+                    .post(api_link)
+                    .header("Content-Type", "application/json")
+                    .json(&serde_json::json!({
+                        "appId": config.app_id.to_string(),
+                        "appKey": config.app_key.to_string(),
+                        "clientKey": config.remote_key.to_string(),
+                        "endpoint": "/show",
+                        "data": {}
+                    }))
+                    .send()
+                    .await.unwrap_or_else(|_| {
+                        println!("Error: unable to send request to server");
+                        std::process::exit(exitcode::UNAVAILABLE);
+                    });
+                    
+                println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
 
-            // println!("{}", data_file);
-
-            list = serde_json::from_str(&data_file).unwrap_or_else(|_e| {
-                // println!("{}", e);
-                println!("Error: can't parse data_file into json");
-                vec![]
-            })
-        }
-
+                // list = res.json().await.unwrap_or_else(|e| {
+                //     println!("Error: unable to parse response to json");
+                //     println!("{}",e);
+                //     std::process::exit(exitcode::DATAERR);
+                // });
+            },
+        }        
         return List { data: list };
     }
 

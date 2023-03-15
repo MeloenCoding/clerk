@@ -14,9 +14,9 @@ use clap::Parser;
 async fn main() -> Result<(), reqwest::Error>{
     let args: args::ClerkArgs = args::ClerkArgs::parse();
     let config: Config = Config::read();
-    let mut list: ListData = List::read().data;
+    let mut list: ListData = List::read(&config).await.data;
 
-    // println!("{:?}", list.data);
+    println!("{:?}", list);
 
     let output: (&ListData, Option<u16>) = match &args.entity_type {
         Some(EntityType::Add(command_args)) => add::handle(config, command_args, &mut list),
