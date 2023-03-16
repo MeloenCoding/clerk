@@ -18,7 +18,7 @@ async fn main() -> Result<(), reqwest::Error>{
 
     // println!("{:?}", list);
 
-    let output: (&ListData, Option<u16>) = match &args.entity_type {
+    let output: CommandOutput = match &args.entity_type {
         Some(EntityType::Add(command_args)) => add::handle(&config, command_args, &mut list),
         Some(EntityType::Mark(command_args)) => mark::handle(&config, command_args, &mut list),
         Some(EntityType::Edit(command_args)) => edit::handle(&config, command_args, &mut list),
@@ -26,18 +26,23 @@ async fn main() -> Result<(), reqwest::Error>{
         None => default::handle(&list)
     };
 
-    cli::draw_cli(output.0, output.1);
+    cli::draw_cli(&output, &config);
 
     if !config.local {
-        List::set(&config, output.0).await;
+        List::set(&config, output.data).await;
     }
 
     Ok(())
 }
 
-pub fn create_error(error_code: ExitCode, custom_error_message: String) {
+pub fn create_error(custom_error_message: &str, error_code: Option<ExitCode>) {
     println!("Error: {}", custom_error_message);
-    std::process::exit(error_code);
+    if error_code.is_some() {
+        std::process::exit(error_code.unwrap());
+    };
 }
 
-// clerk 8 -c
+pub struct CommandOutput<'a> {
+    pub data: &'a ListData,
+    pub page_num: Option<i64>,
+}

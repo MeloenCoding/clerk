@@ -1,8 +1,11 @@
-use crate::data::ListData;
+use crate::{data::ListData, CommandOutput};
 
-pub fn handle(list: &ListData) -> (&ListData, Option<u16>) {
+pub fn handle(list: &ListData) -> CommandOutput {
     
 
-    return (list, None);
+    CommandOutput {
+        data: list,
+        page_num: None,
+    }
 }
 

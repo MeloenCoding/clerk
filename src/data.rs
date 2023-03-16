@@ -5,7 +5,7 @@ use serde_repr::*;
 use directories::ProjectDirs;
 use serde::{Serialize, Deserialize};
 
-use crate::config::Config;
+use crate::{config::Config, create_error};
 
 pub type ListData = Vec<MainTaskFormat>;
 
@@ -60,7 +60,7 @@ impl List {
         
                     list = serde_json::from_str(&data_file).unwrap_or_else(|_e| {
                         // println!("{}", e);
-                        println!("Error: can't parse data_file into json");
+                        create_error("can't parse data_file into json", None);
                         vec![]
                     })
                 }
@@ -79,24 +79,23 @@ impl List {
                     }))
                     .send()
                     .await.unwrap_or_else(|_| {
-                        println!("Error: unable to send request to server");
-                        std::process::exit(exitcode::UNAVAILABLE);
+                        create_error("unable to send request to server", Some(exitcode::UNAVAILABLE));
+                        panic!("Error: unable to send request to server");
                     });
                     
                 // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
  
                 if res.status().is_success() {
                     let res_json = &res.json::<ApiRes>().await.unwrap_or_else(|_| {
-                        println!("Error: unable to parse response to json");
-                        std::process::exit(exitcode::DATAERR);
+                        create_error("unable to parse response to json", Some(exitcode::DATAERR));
+                        panic!("Error: unable to parse response to json");
                     });
                     if res_json.valid {
                         list = res_json.data.to_owned();
                     }
                 }
                 else {
-                    println!("Error: invalid response from server");
-                    std::process::exit(exitcode::DATAERR);
+                    create_error("invalid response from server", Some(exitcode::DATAERR));
                 }
 
             },
@@ -109,14 +108,13 @@ impl List {
         let data_path: &Path = Path::new(data_path_string);
 
         let string_data: String = serde_json::to_string_pretty(&new_data).unwrap_or_else(|_| {
-            println!("Error: can't parse ListData to string_data");
-            std::process::exit(exitcode::DATAERR);
-
+            create_error("can't parse ListData to string_data", Some(exitcode::DATAERR));
+            panic!("Error: unable to parse response to json");
         });
 
         fs::write(data_path, string_data).unwrap_or_else(|_|{
-            println!("Error: couldn't find or write project dir");
-            std::process::exit(exitcode::OSFILE);
+            create_error("couldn't find or write project dir", Some(exitcode::OSFILE));
+            panic!("Error: couldn't find or write project dir");
         });   
     }
     
@@ -153,15 +151,15 @@ impl List {
             }))
             .send()
             .await.unwrap_or_else(|_| {
-                println!("Error: unable to send request to server");
-                std::process::exit(exitcode::UNAVAILABLE);
+                create_error("unable to send request to server", Some(exitcode::UNAVAILABLE));
+                panic!("Error: unable to send request to server");
             });
             
         // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
 
         if !res.status().is_success() {
-            println!("Error: invalid response from server");
-            std::process::exit(exitcode::DATAERR);
+            create_error("invalid response from server", Some(exitcode::DATAERR));
+            panic!("Error: invalid response from server");
         }
     }
 }

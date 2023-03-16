@@ -2,7 +2,7 @@ use std::vec;
 
 use clap::Args;
 
-use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}};
+use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}, CommandOutput, create_error};
 
 #[derive(Debug, Args)]
 pub struct Arguments {
@@ -14,42 +14,37 @@ pub struct Arguments {
     pub index: Option<usize>,
 }
 
-pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
+pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> CommandOutput<'a> {
     let index_arg: usize = command_args.index.unwrap_or(usize::MAX);
-    if config.local {
-        if command_args.index.is_none() {
-            list.push( MainTaskFormat {
-                data: vec![],
-                state: TaskState::Pending,
-                title: command_args.task_name.to_string(),
-                github_link: "".to_string(),
-            });
-        }
-        else {
-            if index_arg == usize::MAX || index_arg > list.len(){
-                println!("Error: invalid index");
-                std::process::exit(exitcode::DATAERR);
-            }
 
-            list[index_arg].data.append(&mut vec![Todo {
-                data: command_args.task_name.to_string(),
-                state: TaskState::Pending 
-            }]);
+    if command_args.index.is_none() {
+        list.push( MainTaskFormat {
+            data: vec![],
+            state: TaskState::Pending,
+            title: command_args.task_name.to_string(),
+            github_link: "".to_string(),
+        });
+    }
+    else {
+        if index_arg == usize::MAX || index_arg > list.len(){
+            create_error("invalid index", Some(exitcode::DATAERR));
         }
+
+        list[index_arg].data.append(&mut vec![Todo {
+            data: command_args.task_name.to_string(),
+            state: TaskState::Pending 
+        }]);
+    }
+
+    if config.local {
+        data::List::write(list.to_vec(), &config.local_location);
     }
     else if config.remote_location.is_empty() {
-        println!("Error: no remote_location is set");
-        std::process::exit(exitcode::CONFIG);
+        create_error("no remote_location is set", Some(exitcode::CONFIG));
     }
-    else{
-        list.push(MainTaskFormat { 
-            data: vec![],
-            title: command_args.task_name.to_string(), 
-            state: TaskState::Pending, 
-            github_link: "".to_string() 
-        })
-    }
-
-    data::List::write(list.to_vec(), &config.local_location);
-    return (list, None);
+    
+    return CommandOutput {
+        data: list,
+        page_num: None
+    };
 }

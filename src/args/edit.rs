@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}};
+use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}, CommandOutput, create_error};
 
 #[derive(Debug, Args)]
 pub struct Arguments {
@@ -27,16 +27,14 @@ pub enum IndexArgs {
 
 fn write_list<'a>(new_value: &'a String, index_of_maintask: usize, index_of_subtask: Option<usize>, list: &'a mut ListData) -> &'a ListData {
     if index_of_maintask >= list.len() {
-        println!("Error: index_of_maintask out of bounds");
-        std::process::exit(exitcode::DATAERR);
+        create_error("index_of_maintask out of bounds", Some(exitcode::DATAERR));
     }
     let mut target_maintask: &mut MainTaskFormat = &mut list[index_of_maintask];
 
     match index_of_subtask {
         Some(index_of_subtask) => {
             if index_of_subtask >= target_maintask.data.len() {
-                println!("Error: index_of_subtask out of bounds");
-                std::process::exit(exitcode::CONFIG);
+                create_error("index_of_subtask out of bounds", Some(exitcode::CONFIG));
             }
             let mut target_subtask: &mut Todo = &mut list[index_of_maintask].data[index_of_subtask];
 
@@ -51,13 +49,12 @@ fn write_list<'a>(new_value: &'a String, index_of_maintask: usize, index_of_subt
 
 }
 
-pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> (&'a ListData, Option<u16>) {
+pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> CommandOutput<'a> {
     let index_of_maintask: usize = command_args.index_of_maintask;
     let index_of_subtask: Option<usize> = command_args.index_of_subtask;
     
     if index_of_maintask >= list.len() {
-        println!("Error: index_of_maintask out of bounds");
-        std::process::exit(exitcode::DATAERR);
+        create_error("index_of_maintask out of bounds", Some(exitcode::DATAERR));
     }
 
     if config.local {
@@ -68,5 +65,8 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
         data::List::write(updated_list.to_vec(), &config.local_location);
     }
 
-    return (list, None);
+    return CommandOutput {
+        data: list,
+        page_num: None
+    };
 }

@@ -1,17 +1,19 @@
 use colored::Colorize;
 
-use crate::data::{ListData, TaskState, Todo};
+use crate::{data::{TaskState, Todo, MainTaskFormat}, config::Config, CommandOutput, create_error};
 
 // use termsize;
 
-pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
-    let page_num = page_num.unwrap_or(0);
-    let mut total_tasks: u32 = list.len().try_into().unwrap();
-    let total_main_tasks: u32 = list.len().try_into().unwrap();
-    let mut total_sub_tasks: u32 = 0;
-    let mut total_completed: u32 = 0;
-    let mut total_doing: u32 = 0;
-    let mut total_pending: u32 = 0;
+pub fn draw_cli(output: &CommandOutput, config: &Config) {
+    let page_num: i64 = output.page_num.unwrap_or(0);
+    let list: &Vec<MainTaskFormat> = output.data;
+    let mut total_tasks: i64 = list.len().try_into().unwrap();
+    let total_main_tasks: i64 = list.len().try_into().unwrap();
+    let page_size: i64 = config.page_size as i64;
+    let mut total_sub_tasks: i64 = 0;
+    let mut total_completed: i64 = 0;
+    let mut total_doing: i64 = 0;
+    let mut total_pending: i64 = 0;
 
     for todo_item in list {
         let state: &TaskState = &todo_item.state;
@@ -43,16 +45,15 @@ pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
         }
     }
     total_tasks += total_sub_tasks;
+    
+    let mut max_page: i64 = (total_main_tasks + (page_size - 1)) / page_size;
 
-    let mut max_page: f64 = (<u32 as Into<f64>>::into(total_main_tasks)/5.0_f64).ceil();
-
-    if max_page == 0.0 {
-        max_page += 1.0;
+    if max_page == 0 {
+        max_page += 1;
     }
 
-    if page_num >= max_page as u16 && list.len() != 0 {
-        println!("Error: page_num out of bounds");
-        std::process::exit(exitcode::DATAERR);
+    if page_num >= max_page && list.len() != 0 {
+        create_error("page_num out of bounds", Some(exitcode::DATAERR));
     }
     
     println!(
@@ -68,9 +69,9 @@ pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
         ")".italic().bright_black()
     );
     println!("║ ");
-    let start: usize = (page_num * 5) as usize;
-    for i in start..list.len() {
-        let todo_item = &list[i];
+    let start: i64 = page_num * page_size;
+    for i in start as usize..list.len() {
+        let todo_item: &MainTaskFormat = &list[i];
         let state: &TaskState = &todo_item.state;
         let data: &Vec<Todo> = todo_item.data.as_ref();
 
@@ -105,17 +106,17 @@ pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
             // println!("║            │");
             ii += 1;
         }
-        if i == start + 4 {
+        if i as i64 == start + page_size - 1 {
             break;
         }
         println!("║ ");
     }
 
-    let completion: f64 = <u32 as Into<f64>>::into(total_completed) / <u32 as Into<f64>>::into(total_tasks) * 100.0;
+    let completion: i64 = ((total_completed as f64 / total_tasks as f64) * 100.0) as i64;
     println!("║ ");
 
     if list.len() != 0 {
-        println!("║      {}", format!("{}% of all tasks are completed", completion.floor()).bright_black());
+        println!("║      {}", format!("{}% of all tasks are completed", completion).bright_black());
         println!("║  ─ {} completed · {} doing · {} pending ─", total_completed.to_string().bright_green(), total_doing.to_string().bright_cyan(), total_pending.to_string().bright_magenta());
     }
     else {
@@ -123,13 +124,3 @@ pub fn draw_cli(list: &ListData, page_num: Option<u16>) {
     }
     println!("╨ ");
 }
-
-
-// termsize::get().map(|size| {
-//     let mut test = "╞".to_owned();
-//     for _i in 0..size.cols-2 {
-//         test.push('═');
-//     }
-//     test.push('╡');
-//     // println!("{}", test);
-// });
