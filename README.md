@@ -47,8 +47,8 @@ local = false # use local_location
 page_size = 5 # set the page size when you run 'clerk'
 
 [locations]
-config_dir = '' # gets set when you first run the program. you could change it to a custom location if you want
-local_location = '' # gets set when you first run the program. you could change it to a custom location if you want
+config_dir = '' # gets set when you first run the program. you could change it to a custom location 
+local_location = '' # gets set when you first run the program. you could change it to a custom location 
 remote_location = "" # you need to set this your self to the location of your compatible api
 
 # if you use some sort of validation in your api, you could set these to check validation in your api
