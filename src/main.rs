@@ -10,6 +10,11 @@ use tokio;
 use config::Config;
 use clap::Parser;
 
+pub struct CommandOutput<'a> {
+    pub data: &'a ListData,
+    pub page_num: Option<i64>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error>{
     let args: args::ClerkArgs = args::ClerkArgs::parse();
@@ -40,9 +45,4 @@ pub fn create_error(custom_error_message: &str, error_code: Option<ExitCode>) {
     if error_code.is_some() {
         std::process::exit(error_code.unwrap());
     };
-}
-
-pub struct CommandOutput<'a> {
-    pub data: &'a ListData,
-    pub page_num: Option<i64>,
 }
