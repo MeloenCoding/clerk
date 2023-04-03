@@ -16,3 +16,10 @@ toml = "0.7.2"
 serde_repr = "0.1.11"
 exitcode = "1.1.2"
 # termsize = "0.1.6"
+
+[profile.release]
+opt-level = "z"
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -2,7 +2,7 @@ use std::vec;
 
 use clap::Args;
 
-use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}, CommandOutput, create_error, cli::{calculate_tasks, CalculatedTasks, calculate_changed_page}};
+use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}, CommandOutput, create_error, cli::calculate_changed_page};
 
 #[derive(Debug, Args)]
 pub struct Arguments {

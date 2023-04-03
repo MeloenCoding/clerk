@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self, Todo}, CommandOutput, create_error, cli::{CalculatedTasks, calculate_tasks, calculate_changed_page}};
+use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self, Todo}, CommandOutput, create_error, cli::calculate_changed_page};
 #[derive(Debug, Args)]
 pub struct Arguments {
     /// <INT> : The index of the main task you want to mark

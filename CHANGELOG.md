@@ -1,27 +1,28 @@
 # What's new
 
 ## v0.1.0
-- [x] sub tasks (chapters with sub tasks)
-- [x] edit previously added tasks
-- [x] add github repo links to tasks
-- [x] icons
-- [x] stats
-- [x] pages
-- [x] colors
-- [x] more config options (page size, theme_file)
+* sub tasks (chapters with sub tasks)
+* edit previously added tasks
+* add github repo links to tasks
+* icons
+* stats
+* pages
+* colors
+* more config options (page size, theme_file)
 
 ## v0.2.0
-- [x] fix clerk.ts (don't need endpoint. just one with switch statement)
-- [x] + fix 'External use' in README.md
-- [x] more instructions how to actualy use clerk. like adding it as PATH var
-- [x] color-blind mode (for terminals that don't support colors)
-- [x] unicode-fix (for terminals that don't support all unicode chars)
-- [x] show page of task you've just changed !!!
-- [x] if invalid response give better error
-- [x] error handling improvement
+* Bump openssl from 0.10.45 to 0.10.49 by @dependabot in https://github.com/MeloenCoding/clerk/pull/1
+* fix clerk.ts (i assumed every api was like mine) + fix 'External use' in 'README.md'
+* more instructions how to actualy use clerk. like adding it as PATH var, etc.
+* color-blind mode (for terminals that don't support colors)
+* unicode-fix (for terminals that don't support all unicode chars)
+* show page of task you've just changed
+* error handling improvement
+* optimized build for smallest size possible
 
 ### would be fun to implement someday
 - [ ] config for remote usage
 - [ ] download list locally (config - utils)
 - [ ] default sync (for offline usage) (config - utils) (don't know about that one)
 - [ ] themes
+- [ ] make github links actually usable (lol) 

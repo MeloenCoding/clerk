@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}, CommandOutput, create_error, cli::{calculate_tasks, CalculatedTasks, calculate_changed_page}};
+use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}, CommandOutput, create_error, cli::calculate_changed_page};
 
 #[derive(Debug, Args)]
 pub struct Arguments {
