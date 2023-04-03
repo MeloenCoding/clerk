@@ -4,6 +4,7 @@ mod data;
 mod cli;
 
 use args::{EntityType, add, default, mark, edit, page};
+use colored::Colorize;
 use data::{List, ListData};
 use exitcode::{self, ExitCode};
 use tokio;
@@ -41,8 +42,10 @@ async fn main() -> Result<(), reqwest::Error>{
 }
 
 pub fn create_error(custom_error_message: &str, error_code: Option<ExitCode>) {
-    println!("Error: {}", custom_error_message);
+    println!("clerk v{} \nError: {}", env!("CARGO_PKG_VERSION"), custom_error_message,);
+    println!("If you think this is a bug or you don't know how to resolve it, open an issue on my github here: {}", env!("CARGO_PKG_REPOSITORY").bold());
     if error_code.is_some() {
+        println!("Errorcode {}", error_code.unwrap());
         std::process::exit(error_code.unwrap());
     };
 }

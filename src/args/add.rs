@@ -2,7 +2,7 @@ use std::vec;
 
 use clap::Args;
 
-use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}, CommandOutput, create_error};
+use crate::{config::Config, data::{ListData, TaskState, MainTaskFormat, self, Todo}, CommandOutput, create_error, cli::{calculate_tasks, CalculatedTasks, calculate_changed_page}};
 
 #[derive(Debug, Args)]
 pub struct Arguments {
@@ -16,6 +16,7 @@ pub struct Arguments {
 
 pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut ListData) -> CommandOutput<'a> {
     let index_arg: usize = command_args.index.unwrap_or(usize::MAX);
+    let page_num: Option<i64>;
 
     if command_args.index.is_none() {
         list.push( MainTaskFormat {
@@ -24,6 +25,7 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
             title: command_args.task_name.to_string(),
             github_link: "".to_string(),
         });
+        page_num = calculate_changed_page(&list, config, list.len() as i64 - 1);
     }
     else {
         if index_arg == usize::MAX || index_arg > list.len(){
@@ -34,6 +36,8 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
             data: command_args.task_name.to_string(),
             state: TaskState::Pending 
         }]);
+
+        page_num = calculate_changed_page(&list, config, index_arg as i64);
     }
 
     if config.local {
@@ -43,8 +47,9 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
         create_error("no remote_location is set", Some(exitcode::CONFIG));
     }
     
+    
     return CommandOutput {
         data: list,
-        page_num: None
+        page_num
     };
 }

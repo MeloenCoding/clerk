@@ -1,9 +1,0 @@
-- [x] sub tasks (chapters with sub tasks)
-- [x] edit previously added tasks
-- [x] add github repo links to tasks
-- [x] icons
-- [x] stats
-- [x] pages
-- [x] colors
-- [ ] themes
-- [ ] more config options (page size, theme_file)

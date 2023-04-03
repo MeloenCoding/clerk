@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self, Todo}, CommandOutput, create_error};
+use crate::{config::Config, data::{ListData, MainTaskFormat, TaskState, self, Todo}, CommandOutput, create_error, cli::{CalculatedTasks, calculate_tasks, calculate_changed_page}};
 #[derive(Debug, Args)]
 pub struct Arguments {
     /// <INT> : The index of the main task you want to mark
@@ -72,17 +72,13 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
                         create_error("index_of_subtask out of bounds", Some(exitcode::CONFIG));
                     }
                     list[index_of_maintask].data.remove(index_of_subtask);
-                    return CommandOutput {
-                        data: list,
-                        page_num: None
-                    };
+
+                    list
                 },
                 None => {
                     list.remove(index_of_maintask);
-                    return CommandOutput {
-                        data: list,
-                        page_num: None
-                    };
+                    
+                    list
                 },
             }                
         },
@@ -93,6 +89,6 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
 
     return CommandOutput {
         data: list,
-        page_num: None
+        page_num: calculate_changed_page(list, config, index_of_maintask as i64)
     };
 }

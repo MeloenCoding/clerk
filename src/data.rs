@@ -56,10 +56,7 @@ impl List {
                         }
                     };
         
-                    // println!("{}", data_file);
-        
                     list = serde_json::from_str(&data_file).unwrap_or_else(|_e| {
-                        // println!("{}", e);
                         create_error("can't parse data_file into json", None);
                         vec![]
                     })
@@ -67,6 +64,9 @@ impl List {
             },
             false => {
                 let api_link: String = format!("{}", config.remote_location);
+                if api_link == "" || !api_link.starts_with("http") || !api_link.starts_with("https") {
+                    create_error("the api endpoint in your config must start with either: 'http' or 'https' when you try to use a remote location", Some(exitcode::DATAERR));
+                }
                 let res: Response = reqwest::Client::new()
                     .post(api_link)
                     .header("Content-Type", "application/json")
@@ -79,25 +79,22 @@ impl List {
                     }))
                     .send()
                     .await.unwrap_or_else(|_| {
-                        create_error("unable to send request to server", Some(exitcode::UNAVAILABLE));
-                        panic!("Error: unable to send request to server");
+                        create_error("unable to send '/show' request to server. Either your api endpoint doesn't exist, or is not setup to handle post requests", Some(exitcode::UNAVAILABLE));
+                        panic!("Error: unable to send '/show' request to server. Either your api endpoint doesn't exist, or is not setup to handle post requests");
                     });
                     
-                // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
- 
                 if res.status().is_success() {
                     let res_json = &res.json::<ApiRes>().await.unwrap_or_else(|_| {
-                        create_error("unable to parse response to json", Some(exitcode::DATAERR));
-                        panic!("Error: unable to parse response to json");
+                        create_error("unable to parse '/show' response to valid json. Make sure your data file in your server is valid json and has the required structure", Some(exitcode::DATAERR));
+                        panic!("Error: unable to parse '/show' response to json");
                     });
                     if res_json.valid {
                         list = res_json.data.to_owned();
                     }
                 }
                 else {
-                    create_error("invalid response from server", Some(exitcode::DATAERR));
+                    create_error("invalid '/show' response from server. Request status was not succesfull", Some(exitcode::DATAERR));
                 }
-
             },
         }        
         return List { data: list };
@@ -130,7 +127,7 @@ impl List {
 
         new_data_file.write_all(deafult_data_file.as_bytes()).expect("Error: can't write config file");
 
-        println!("For more information about this tool, run '{}'", format!("clerk.exe -h").bold());
+        println!("For more information about this tool, run '{}'. \nOr take a look at the documentation here: {}", format!("clerk.exe -h").bold(), env!("CARGO_PKG_REPOSITORY").bold());
 
         return deafult_data_file.to_owned();
     }
@@ -155,8 +152,6 @@ impl List {
                 panic!("Error: unable to send request to server");
             });
             
-        // println!("{:?}", &res.text().await.unwrap_or("Error: can't covert body to text".to_string()));
-
         if !res.status().is_success() {
             create_error("invalid response from server", Some(exitcode::DATAERR));
             panic!("Error: invalid response from server");

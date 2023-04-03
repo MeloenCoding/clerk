@@ -11,6 +11,8 @@ use crate::create_error;
 pub struct Config {
     pub local: bool,
     pub page_size: i64,
+    pub use_unicode: bool,
+    pub color_blind: bool,
     pub config_dir: String,
     pub local_location: String,
     pub remote_location: String,
@@ -29,6 +31,8 @@ pub struct TomlConfig {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TomlConfigSettings {
     local: Option<bool>,
+    use_unicode: Option<bool>,
+    color_blind: Option<bool>,
     page_size: Option<i64>
 }
 
@@ -59,7 +63,6 @@ impl Config {
             };
 
             config = toml::from_str(&config_str).unwrap_or_else(|_e| {
-                // println!("{}", e);
                 create_error("can't parse config_str into toml", None);
                 TomlConfig { 
                     settings: None, 
@@ -69,21 +72,29 @@ impl Config {
             })
         }
 
-        let (config_local, page_size): (bool, i64) = match config.settings {
+        let (config_local, color_blind, use_unicode, page_size): (bool, bool, bool, i64) = match config.settings {
             Some(settings) => {
-                let config_page_size_setting: i64 = settings.page_size.unwrap_or_else(|| {
-                    create_error("missing missing page_size variable in Settings table", None);
-                    5.to_owned() // default page size is 5 tasks long
-                });
                 let config_local_setting: bool = settings.local.unwrap_or_else(|| {
                     create_error("missing local variable in Settings table", None);
                     true // default location is local
                 });
-                (config_local_setting, config_page_size_setting)
+                let config_use_unicode: bool = settings.use_unicode.unwrap_or_else(|| {
+                    create_error("missing use_unicode variable in Settings table", None);
+                    false // default location is local
+                });
+                let config_color_blind: bool = settings.color_blind.unwrap_or_else(|| {
+                    create_error("missing color_blind variable in Settings table", None);
+                    false // default location is local
+                });               
+                let config_page_size_setting: i64 = settings.page_size.unwrap_or_else(|| {
+                    create_error("missing missing page_size variable in Settings table", None);
+                    5.to_owned() // default page size is 5 tasks long
+                });               
+                (config_local_setting, config_color_blind, config_use_unicode, config_page_size_setting)
             }
             None => {
                 create_error("missing Settings table", None);
-                (true, 5)
+                (true, false, false, 5)
             },
         };
 
@@ -134,6 +145,8 @@ impl Config {
         return Config {
             local: config_local,
             page_size: page_size,
+            use_unicode: use_unicode,
+            color_blind: color_blind,
             config_dir: config_dir_setting,
             local_location: local_location_setting,
             remote_location: remote_location_setting,
@@ -151,6 +164,8 @@ impl Config {
         let default_config: TomlConfig = TomlConfig {
             settings: Some(TomlConfigSettings {
                 local: Some(true),
+                use_unicode: Some(false),
+                color_blind: Some(false),
                 page_size: Some(5),
             }),
             locations: Some(TomlConfigLocations {

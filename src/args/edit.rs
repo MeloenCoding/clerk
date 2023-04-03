@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}, CommandOutput, create_error};
+use crate::{config::Config, data::{ListData, MainTaskFormat, Todo, self}, CommandOutput, create_error, cli::{calculate_tasks, CalculatedTasks, calculate_changed_page}};
 
 #[derive(Debug, Args)]
 pub struct Arguments {
@@ -56,7 +56,7 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
     if index_of_maintask >= list.len() {
         create_error("index_of_maintask out of bounds", Some(exitcode::DATAERR));
     }
-
+    
     if config.local {
         let updated_list: &ListData = match command_args.option {
             IndexArgs::Title => write_list(&command_args.new_value, index_of_maintask, index_of_subtask, list),
@@ -67,6 +67,6 @@ pub fn handle<'a>(config: &Config, command_args: &'a Arguments, list: &'a mut Li
 
     return CommandOutput {
         data: list,
-        page_num: None
+        page_num: calculate_changed_page(&list, config, index_of_maintask as i64)
     };
 }
