@@ -2,9 +2,7 @@
 #### A multi-platform todo-list cli-application
 
 ## Usage
-Before you download this program you should have a 
-
-The use of this application is pretty simple. You should first download it from the latest release.
+The use of this application is pretty simple. You should first download the latest release.
 
 If you're on windows you could just install the clerk.exe and your pretty much done.
 
@@ -13,7 +11,7 @@ you should compile it by using 'cargo build --release'. If you don't have cargo 
 you should first do that. Just go to the offical rust site and follow their instructions.
 
 That's it, you should be able to run the file now. But if you want easy access to your list you should
-first add it to your PATH variable. 
+first add it to your PATH variables. 
 
 After you've done that, close your terminal and fire it back up again.
 You should be able to just type 'clerk' and get greeted by an empty list.
